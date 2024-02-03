@@ -1,0 +1,71 @@
+﻿@using System.Net.Http.Headers;
+@using Newtonsoft.Json.Linq;
+@using Newtonsoft.Json;
+@using api.Models
+@model int
+@{
+    HttpClient client;
+    string orderDetailsURL = "https://localhost:7294/odata/OrderDetails";
+
+    client = new HttpClient();
+    var contentType = new MediaTypeWithQualityHeaderValue("application/json");
+    client.DefaultRequestHeaders.Accept.Add(contentType);
+
+    HttpResponseMessage res = await client.GetAsync($"{orderDetailsURL}?$Filter=OrderId eq {Model}");
+    string strData = await res.Content.ReadAsStringAsync();
+
+    var data = JObject.Parse(strData);
+    List<OrderDetail> orderDetails = JsonConvert.DeserializeObject<List<OrderDetail>>(data["value"].ToString());
+}
+<p>
+    <a asp-action="Create" asp-controller="OrderDetails" asp-route-id="@Model">Add</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => orderDetails[0].UnitPrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => orderDetails[0].Quantity)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => orderDetails[0].Discount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => orderDetails[0].Order)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => orderDetails[0].Product)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in orderDetails)
+        {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.UnitPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Discount)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Order.OrderId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Product.ProductName)
+            </td>
+            <td>
+@*                 <a asp-controller="OrderDetails" asp-action="Edit" asp-route-id="@item.OrderDetailId">Edit</a> |
+ *@                <a asp-controller="OrderDetails" asp-action="Details" asp-route-id="@item.OrderDetailId">Details</a> |
+                <a asp-controller="OrderDetails" asp-action="Delete" asp-route-id="@item.OrderDetailId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
